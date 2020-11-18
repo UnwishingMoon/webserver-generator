@@ -37,7 +37,7 @@ echo "phpmyadmin phpmyadmin/mysql/admin-pass password $DBRootPass" | debconf-set
 echo "phpmyadmin phpmyadmin/app-password-confirm password $DBPMAPass" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/mysql/app-pass password $DBPMAPass" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
-apt install -yq apache2 mysql-server php libapache2-mod-php php-mysql php-cli php-mbstring phpmyadmin
+apt install -yq apache2 mysql-server php libapache2-mod-php php-mysql php-yaml php-cli php-mbstring phpmyadmin
 echo PURGE | debconf-communicate phpmyadmin
 
 snap install core
@@ -55,6 +55,8 @@ echo "<VirtualHost *:80>
     ServerName ${WBHost}
     ServerAdmin webmaster@localhost
     DocumentRoot /var/www/${WBHost}/www
+
+    php_admin_value open_basedir '/tmp:/var/www/${WBHost}'
 
     LogLevel error
     ErrorLog \${APACHE_LOG_DIR}/${WBHost}_error.log
@@ -80,7 +82,7 @@ usermod -a -G www-data ubuntu
 
 phpenmod mbstring
 
-sed --follow-symlinks -i "/DirectoryIndex index.php/a AllowOverride All" /etc/apache2/conf-enabled/phpmyadmin.conf
+sed --follow-symlinks -i "/DirectoryIndex index.php/a AllowOverride All\nphp_admin_value open_basedir 'none'" /etc/apache2/conf-enabled/phpmyadmin.conf
 
 echo 'AuthType Basic
 Authname "Restricted files"
