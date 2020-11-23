@@ -57,7 +57,7 @@ echo "<VirtualHost *:80>
     ServerAdmin webmaster@localhost
     DocumentRoot /var/www/${WBHost}/www
 
-    php_admin_value open_basedir '/tmp:/var/www/${WBHost}'
+    php_admin_value open_basedir '/tmp/:/var/www/${WBHost}/'
 
     LogLevel error
     ErrorLog \${APACHE_LOG_DIR}/${WBHost}_error.log
