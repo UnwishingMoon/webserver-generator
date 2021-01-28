@@ -17,7 +17,6 @@ DBUserName="diego"
 DBName="diegocastagna_com"
 WBHost="diegocastagna.com"
 DBHtUser="phpmyadmin"
-a2MPM="event" # prefork / event
 
 DBRootPass=$(openssl rand -base64 32)
 DBUserPass=$(openssl rand -base64 32)
@@ -58,6 +57,8 @@ echo "<VirtualHost *:80>
     ServerAdmin webmaster@localhost
     DocumentRoot /var/www/${WBHost}/www
 
+    php_admin_value open_basedir '/tmp/:/var/www/${WBHost}/'
+
     LogLevel error
     ErrorLog \${APACHE_LOG_DIR}/${WBHost}_error.log
     CustomLog \${APACHE_LOG_DIR}/${WBHost}_access.log combined
@@ -66,13 +67,6 @@ echo "<VirtualHost *:80>
         Options -Indexes +SymLinksIfOwnerMatch -Includes
         AllowOverride All
     </Directory>
-
-    <IfModule mpm_prefork_module>
-        php_admin_value open_basedir '/tmp/:/var/www/${WBHost}/'
-    </IfModule>
-    <IfModule mpm_event_module>
-        ProxyFCGISetEnvIf 'true' PHP_ADMIN_VALUE 'open_basedir=/tmp/:/var/www/${WBHost}/'
-    </IfModule>
 </VirtualHost>" > /etc/apache2/sites-available/000-default.conf
 a2ensite 000-default.conf
 
@@ -89,13 +83,7 @@ usermod -a -G www-data admin
 
 phpenmod mbstring
 
-sed --follow-symlinks -i "/DirectoryIndex index.php/a AllowOverride All\n\
-<IfModule mpm_prefork_module>\n\
-    php_admin_value open_basedir '/tmp/:/var/www/${WBHost}/'\n\
-</IfModule>\n\
-<IfModule mpm_event_module>\n\
-    ProxyFCGISetEnvIf 'true' PHP_ADMIN_VALUE 'open_basedir=none'\n\
-</IfModule>" /etc/apache2/conf-enabled/phpmyadmin.conf
+sed --follow-symlinks -i "/DirectoryIndex index.php/a AllowOverride All\n" /etc/apache2/conf-enabled/phpmyadmin.conf
 
 echo 'AuthType Basic
 Authname "Restricted files"
@@ -114,13 +102,6 @@ CREATE USER '${DBUserName}'@'localhost' IDENTIFIED BY '${DBUserPass}';
 GRANT ALL PRIVILEGES ON ${DBName}.* TO '${DBUserName}'@'localhost';
 FLUSH PRIVILEGES;
 _EOF_
-
-if [ $a2MPM == "event" ]; then
-    apt install -yq php-fpm
-    a2dismod php* mpm_prefork
-    a2enmod proxy_fcgi setenvif mpm_event
-    a2enconf php*-fpm
-fi
 
 apt autoremove -yq
 apt autoclean -yq
