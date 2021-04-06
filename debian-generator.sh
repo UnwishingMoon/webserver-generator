@@ -139,6 +139,7 @@ GRANT ALL PRIVILEGES ON ${DBName}.* TO '${DBUserName}'@'localhost';
 FLUSH PRIVILEGES;
 _EOF_
 
+# Cleaning and exiting
 apt autoremove -yq
 apt autoclean -yq
 
