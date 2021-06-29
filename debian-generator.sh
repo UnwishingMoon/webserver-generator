@@ -23,6 +23,7 @@ DBRootPass=$(openssl rand -base64 32)
 DBUserPass=$(openssl rand -base64 32)
 DBPMAPass=$(openssl rand -base64 32)
 DBHtPass=$(openssl rand -base64 32)
+EsDBName=$(echo "$DBName" | sed -E 's/[_]+/\\_/g')
 
 echo "Root:$DBRootPass" >> /root/dbpass.txt
 echo "User:$DBUserPass" >> /root/dbpass.txt
@@ -135,7 +136,7 @@ DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 CREATE DATABASE ${DBName};
 CREATE USER '${DBUserName}'@'localhost' IDENTIFIED BY '${DBUserPass}';
-GRANT ALL PRIVILEGES ON ${DBName}.* TO '${DBUserName}'@'localhost';
+GRANT ALL PRIVILEGES ON ${EsDBName}.* TO '${DBUserName}'@'localhost';
 FLUSH PRIVILEGES;
 _EOF_
 
